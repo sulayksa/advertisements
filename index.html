@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f5a44">
+<meta name="robots" content="noindex,nofollow">
+<title>إعلانات المحاضرات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&family=Tajawal:wght@700;800;900&family=Almarai:wght@700;800&family=Noto+Kufi+Arabic:wght@700;800&family=Changa:wght@600;800&family=Readex+Pro:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@600;700&family=El+Messiri:wght@600;700&family=Rubik:wght@700;800&family=Mada:wght@700;900&family=Reem+Kufi:wght@600;700&family=Amiri:wght@700&family=Harmattan:wght@700&family=Markazi+Text:wght@700&family=Aref+Ruqaa:wght@700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="mark" aria-hidden="true"></div>
+    <div>
+      <h1>إعلانات المحاضرات</h1>
+      <p id="subtitle">لم يُستورد ملف بعد</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button class="btn" id="btnImport" type="button">
+      <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0 4 4m-4-4L8 8M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg>
+      <span>استيراد ملف</span>
+    </button>
+    <button class="btn icon-only" id="btnSettings" type="button" aria-label="الإعدادات">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+    <button class="btn primary" id="btnExport" type="button">
+      <svg viewBox="0 0 24 24"><path d="M12 4v12m0 0 4-4m-4 4-4-4M5 20h14"/></svg>
+      <span>تصدير</span>
+    </button>
+  </div>
+</header>
+
+<main id="app" data-view="list">
+
+  <!-- القائمة -->
+  <section class="pane list" id="paneList" aria-label="قائمة الإعلانات">
+    <div class="pane-head">
+      <div class="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="بحث بالمسجد أو الداعية أو العنوان" autocomplete="off">
+      </div>
+      <div class="chips" id="chips" role="tablist">
+        <button class="chip on" data-f="all" type="button">الكل <b id="cAll">0</b></button>
+        <button class="chip" data-f="noqr" type="button">بدون باركود <b id="cNoqr">0</b></button>
+        <button class="chip" data-f="incomplete" type="button">ناقص <b id="cInc">0</b></button>
+      </div>
+      <div class="list-tools">
+        <label class="check"><input type="checkbox" id="checkAll"><span>تحديد الكل</span></label>
+        <span class="grow"></span>
+        <button class="link" id="btnBulk" type="button">تعديل جماعي</button>
+        <button class="link" id="btnAdd" type="button">+ إعلان</button>
+      </div>
+    </div>
+    <ul class="items" id="items"></ul>
+  </section>
+
+  <!-- المعاينة -->
+  <section class="pane stage" id="paneStage" aria-label="المعاينة">
+    <div class="stage-inner" id="stageInner">
+      <canvas id="cv" class="sheet" aria-label="معاينة الإعلان"></canvas>
+    </div>
+
+    <div class="empty" id="empty">
+      <div class="drop" id="drop">
+        <div class="drop-ico"><svg viewBox="0 0 24 24"><path d="M12 16V4m0 0 4 4m-4-4L8 8M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/></svg></div>
+        <h2>ارفع ملف الإكسل</h2>
+        <p>اسحب الملف هنا أو اضغط للاختيار. يقبل ملف الوزارة كما يصلك، أو النسخة المرتّبة.</p>
+        <button class="btn primary" id="btnPick" type="button">اختيار ملف</button>
+        <small>xlsx أو csv — تتم المعالجة داخل المتصفح ولا يُرسَل أي شيء لأي خادم</small>
+      </div>
+    </div>
+
+    <div class="stage-bar" id="stageBar">
+      <button class="btn icon-only" id="prev" type="button" aria-label="السابق"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+      <span id="pos" class="pos">—</span>
+      <button class="btn icon-only" id="next" type="button" aria-label="التالي"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+      <span class="grow"></span>
+      <button class="btn" id="btnTune" type="button"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg><span>تخصيص التصميم</span></button>
+      <button class="btn only-narrow" id="btnToEdit" type="button">تعديل</button>
+      <button class="btn" id="btnShare" type="button" hidden>مشاركة</button>
+      <button class="btn primary" id="btnOne" type="button">تنزيل هذا الإعلان</button>
+    </div>
+  </section>
+
+  <!-- التعديل -->
+  <section class="pane edit" id="paneEdit" aria-label="تعديل البيانات">
+    <form id="form" autocomplete="off" onsubmit="return false">
+      <div class="pane-title">بيانات الإعلان</div>
+
+      <div class="grid2">
+        <label class="f"><span>رقم الإعلان</span><input id="fNum" inputmode="numeric" type="text"></label>
+        <label class="f"><span>الوقت</span><input id="fTime" list="times" type="text"><datalist id="times"><option>الفجر</option><option>الظهر</option><option>العصر</option><option>المغرب</option><option>العشاء</option></datalist></label>
+      </div>
+
+      <label class="f"><span>اليوم</span>
+        <select id="fDay"><option value="">—</option><option>السبت</option><option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option></select>
+      </label>
+      <div class="f"><span>التاريخ الهجري</span>
+        <div class="date3">
+          <input id="fY" inputmode="numeric" placeholder="السنة" aria-label="السنة">
+          <select id="fM" aria-label="الشهر"></select>
+          <input id="fD" inputmode="numeric" placeholder="اليوم" aria-label="يوم الشهر">
+        </div>
+      </div>
+
+      <label class="f"><span>المسجد (يحدد الباركود)</span><select id="fMosque"></select></label>
+      <div class="hint" id="mosqueHint"></div>
+
+      <label class="f"><span>الداعية</span><input id="fSpeaker" type="text"></label>
+      <label class="f"><span>عنوان المحاضرة</span><textarea id="fTitle" rows="2"></textarea></label>
+      <label class="f"><span>رقم الفسح</span><input id="fFasah" type="text"></label>
+      <div class="f"><span>حجم عنوان هذا الإعلان فقط</span>
+        <div class="stepper"><button type="button" id="tsMinus" aria-label="تصغير">−</button><output id="tsVal">100%</output><button type="button" id="tsPlus" aria-label="تكبير">+</button><button type="button" class="link" id="tsReset">إعادة</button></div>
+      </div>
+
+      <div class="edit-actions">
+        <button class="btn" id="btnDup" type="button">تكرار</button>
+        <button class="btn danger" id="btnDel" type="button">حذف</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<nav class="tabs" id="tabs" aria-label="التنقل">
+  <button data-v="list" class="on" type="button"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>القائمة</button>
+  <button data-v="stage" type="button"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6"/></svg>المعاينة</button>
+  <button data-v="edit" type="button"><svg viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/></svg>تعديل</button>
+</nav>
+
+<input type="file" id="file" accept=".xlsx,.xlsm,.csv" hidden>
+<input type="file" id="qrFiles" accept="image/*" multiple hidden>
+<input type="file" id="fontFile" accept=".ttf,.otf,.woff,.woff2" hidden>
+<input type="file" id="tplFile" accept="image/png,image/jpeg" hidden>
+
+<!-- الإعدادات -->
+<dialog id="dlgSettings">
+  <form method="dialog" class="dlg">
+    <header><h3>الإعدادات</h3><button class="x" value="close" aria-label="إغلاق">×</button></header>
+    <div class="dlg-body">
+      <div class="grid2">
+        <label class="f"><span>السنة الهجرية الافتراضية</span><input id="sYear" inputmode="numeric"></label>
+        <label class="f"><span>رقم أول إعلان</span><input id="sStart" inputmode="numeric"></label>
+      </div>
+      <button class="btn" id="btnRenumber" type="button">إعادة ترقيم كل الإعلانات من الرقم الأول</button>
+
+      <div class="row-btns">
+                <button class="btn" id="btnTpl" type="button">استبدال القالب</button>
+        <button class="btn" id="btnQr" type="button">إضافة باركودات</button>
+      </div>
+      <p class="note">اسم ملف الباركود المضاف يجب أن يطابق اسم المسجد، مثل: <b>جامع الحمادي.png</b></p>
+      <div class="row-btns">
+        <button class="btn" id="btnCsv" type="button">تنزيل البيانات الحالية (CSV)</button>
+        <button class="btn danger" id="btnClear" type="button">مسح البيانات المحفوظة</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<!-- التصدير -->
+<dialog id="dlgExport">
+  <form method="dialog" class="dlg">
+    <header><h3>تصدير الإعلانات</h3><button class="x" value="close" aria-label="إغلاق">×</button></header>
+    <div class="dlg-body">
+      <div class="f"><span>النطاق</span>
+        <div class="seg" id="xScope">
+          <button type="button" data-v="checked" class="on">المحدد</button>
+          <button type="button" data-v="all">الكل</button>
+          <button type="button" data-v="one">الحالي</button>
+        </div>
+      </div>
+      <div class="f"><span>الصيغة</span>
+        <div class="seg" id="xFmt">
+          <button type="button" data-v="jpg" class="on">JPG</button>
+          <button type="button" data-v="png">PNG</button>
+          <button type="button" data-v="pdf">PDF</button>
+        </div>
+      </div>
+      <div class="f"><span>الحجم</span>
+        <div class="seg" id="xSize">
+          <button type="button" data-v="3394">كامل ٣٣٩٤</button>
+          <button type="button" data-v="2400" class="on">كبير ٢٤٠٠</button>
+          <button type="button" data-v="1500">متوسط ١٥٠٠</button>
+          <button type="button" data-v="1080">جوال ١٠٨٠</button>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="xZip" checked><span>حزمة واحدة (ZIP) بدل ملفات منفصلة — لا ينطبق على PDF</span></label>
+      <p class="note" id="xInfo"></p>
+      <div class="progress" id="prog" hidden><i id="progBar"></i><span id="progTxt"></span></div>
+    </div>
+    <footer>
+      <button class="btn" value="close">إلغاء</button>
+      <button class="btn primary" id="btnGo" type="button">ابدأ التصدير</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- تعديل جماعي -->
+<dialog id="dlgBulk">
+  <form method="dialog" class="dlg">
+    <header><h3>تعديل جماعي</h3><button class="x" value="close" aria-label="إغلاق">×</button></header>
+    <div class="dlg-body">
+      <p class="note">يُطبَّق على الإعلانات المحددة في القائمة (<b id="bulkN">0</b>).</p>
+      <div class="grid2">
+        <label class="f"><span>الحقل</span>
+          <select id="bField"><option value="time">الوقت</option><option value="y">السنة</option><option value="m">الشهر (رقم)</option><option value="mnum">رقم أول إعلان للمحدد</option></select>
+        </label>
+        <label class="f"><span>القيمة الجديدة</span><input id="bValue" type="text"></label>
+      </div>
+    </div>
+    <footer>
+      <button class="btn" value="close">إلغاء</button>
+      <button class="btn primary" id="btnBulkGo" type="button">تطبيق</button>
+    </footer>
+  </form>
+</dialog>
+
+
+<aside class="tune" id="tune" hidden aria-label="تخصيص التصميم">
+  <header><h3>تخصيص التصميم</h3><button class="x" id="tuneClose" type="button" aria-label="إغلاق">×</button></header>
+  <div class="tune-body">
+    <p class="note">التعديلات هنا تُطبَّق على كل الإعلانات وتُحفظ في هذا المتصفح.</p>
+    <label class="f"><span>الخط العام</span><select id="gFont"></select></label>
+    <button class="btn" id="btnFont" type="button">رفع خط خاص (ttf / otf)</button>
+    <hr>
+    <label class="f"><span>العنصر</span><select id="tEl"></select></label>
+    <div class="f"><span>الحجم</span>
+      <div class="stepper"><button type="button" id="tMinus" aria-label="تصغير">−</button><output id="tSize">100%</output><button type="button" id="tPlus" aria-label="تكبير">+</button></div>
+    </div>
+    <div class="f"><span>الموضع</span>
+      <div class="dpad" dir="ltr">
+        <button type="button" data-m="0,-1" class="u" aria-label="أعلى"><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></svg></button>
+        <button type="button" data-m="-1,0" class="l" aria-label="يسار"><svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+        <button type="button" data-m="1,0" class="r" aria-label="يمين"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></button>
+        <button type="button" data-m="0,1" class="d" aria-label="أسفل"><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></button>
+      </div>
+      <output id="tPos" class="note" dir="ltr"></output>
+    </div>
+    <label class="f" id="tFontRow"><span>خط هذا العنصر</span><select id="tFont"></select></label>
+    <div class="row-btns"><button class="btn" id="tReset" type="button">إعادة هذا العنصر</button><button class="btn" id="tResetAll" type="button">إعادة الكل</button></div>
+    <p class="note">نصيحة: اضغط مطولاً على السهم للتحريك المستمر. من لوحة المفاتيح: الأسهم للتحريك، Shift للخطوة الأكبر، + و − للحجم.</p>
+  </div>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="dropveil" id="veil">أفلت الملف هنا</div>
+
+<script src="data/qr.js"></script>
+<script src="lib.js"></script>
+<script src="render.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
