@@ -8,7 +8,7 @@
 <title>إعلانات المحاضرات</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&family=Tajawal:wght@700;800;900&family=Almarai:wght@700;800&family=Noto+Kufi+Arabic:wght@700;800&family=Changa:wght@600;800&family=Readex+Pro:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@600;700&family=El+Messiri:wght@600;700&family=Rubik:wght@700;800&family=Mada:wght@700;900&family=Reem+Kufi:wght@600;700&family=Amiri:wght@700&family=Harmattan:wght@700&family=Markazi+Text:wght@700&family=Aref+Ruqaa:wght@700&family=Lalezar&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&family=Tajawal:wght@700;800;900&family=Almarai:wght@700;800&family=Noto+Kufi+Arabic:wght@700;800&family=Changa:wght@600;800&family=Readex+Pro:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@600;700&family=El+Messiri:wght@600;700&family=Rubik:wght@700;800&family=Mada:wght@700;900&family=Reem+Kufi:wght@600;700&family=Amiri:wght@700&family=Harmattan:wght@700&family=Markazi+Text:wght@700&family=Aref+Ruqaa:wght@700&family=Lalezar&family=Alexandria:wght@700;800&family=Vazirmatn:wght@700;800&family=Zain:wght@800;900&family=Beiruti:wght@700;800&family=Kufam:wght@700;800&family=Baloo+Bhaijaan+2:wght@700;800&family=Noto+Sans+Arabic:wght@700;800&family=Noto+Naskh+Arabic:wght@700&family=Cairo+Play:wght@700;800&family=Marhey:wght@600;700&family=Lemonada:wght@600;700&family=Mirza:wght@700&family=Scheherazade+New:wght@700&family=Rakkas&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -158,6 +158,13 @@
   </form>
 </dialog>
 
+<dialog id="dlgFonts">
+  <form method="dialog" class="dlg">
+    <header><h3>اختر الخط</h3><button class="x" value="close" aria-label="إغلاق">×</button></header>
+    <div class="dlg-body"><div class="fontgrid" id="fontGrid"></div></div>
+  </form>
+</dialog>
+
 <!-- التصدير -->
 <dialog id="dlgExport">
   <form method="dialog" class="dlg">
@@ -230,6 +237,7 @@
   <div class="tune-body">
     <p class="note">التعديلات هنا تُطبَّق على كل الإعلانات وتُحفظ في هذا المتصفح.</p>
     <label class="f"><span>الخط العام</span><select id="gFont"></select></label>
+    <button class="btn" id="btnFonts" type="button">استعراض الخطوط واختيار الخط</button>
     <button class="btn" id="btnFont" type="button">رفع خط خاص (ttf / otf)</button>
     <hr>
     <label class="f"><span>العنصر</span><select id="tEl"></select></label>

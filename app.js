@@ -569,6 +569,11 @@
   }
   $$('.dpad button').forEach(b => { const [x, y] = b.dataset.m.split(',').map(Number); holdRepeat(b, () => nudge(x * 2, y * 2)); });
   holdRepeat($('#tMinus'), () => resize(-0.02)); holdRepeat($('#tPlus'), () => resize(0.02));
+  $('#btnFonts').addEventListener('click', () => {
+    $('#fontGrid').innerHTML = Render.FONTS.map(f => `<button type="button" class="fcard${f.name === S.settings.font ? ' on' : ''}" data-f="${esc(f.name)}"><b style="font-family:'${esc(f.name)}',sans-serif;font-weight:${f.w}">شرح حديث وجدان</b><small>${esc(f.label || f.name)}</small></button>`).join('');
+    $('#dlgFonts').showModal();
+  });
+  $('#fontGrid').addEventListener('click', e => { const c = e.target.closest('.fcard'); if (!c) return; S.settings.font = c.dataset.f; $('#gFont').value = c.dataset.f; persist(); queueDraw(); $('#dlgFonts').close(); toast('الخط: ' + c.dataset.f); });
   $('#tEl').addEventListener('change', syncTune);
   $('#tFont').addEventListener('change', e => { elAdj().f = e.target.value; tuneChanged(); });
   $('#gFont').addEventListener('change', e => { S.settings.font = e.target.value; persist(); queueDraw(); });

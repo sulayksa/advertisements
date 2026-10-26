@@ -22,6 +22,20 @@ const Render = (() => {
     { name: 'Markazi Text', w: 700, label: 'Markazi — مركزي' },
     { name: 'Aref Ruqaa', w: 700, label: 'Aref Ruqaa — رقعة' },
     { name: 'Lalezar', w: 400, label: 'Lalezar — لاله‌زار' },
+    { name: 'Alexandria', w: 800, label: 'Alexandria — الإسكندرية' },
+    { name: 'Vazirmatn', w: 800, label: 'Vazirmatn' },
+    { name: 'Zain', w: 900, label: 'Zain — زين' },
+    { name: 'Beiruti', w: 800, label: 'Beiruti — بيروتي' },
+    { name: 'Kufam', w: 800, label: 'Kufam — كوفام' },
+    { name: 'Baloo Bhaijaan 2', w: 800, label: 'Baloo Bhaijaan' },
+    { name: 'Noto Sans Arabic', w: 800, label: 'Noto Sans Arabic' },
+    { name: 'Noto Naskh Arabic', w: 700, label: 'Noto Naskh — نسخ' },
+    { name: 'Cairo Play', w: 800, label: 'Cairo Play' },
+    { name: 'Marhey', w: 700, label: 'Marhey — مرحى' },
+    { name: 'Lemonada', w: 700, label: 'Lemonada' },
+    { name: 'Mirza', w: 700, label: 'Mirza — ميرزا' },
+    { name: 'Scheherazade New', w: 700, label: 'Scheherazade — شهرزاد' },
+    { name: 'Rakkas', w: 400, label: 'Rakkas — رقاص' },
   ];
   const weightOf = fam => (FONTS.find(f => f.name === fam) || { w: 800 }).w;
 
