@@ -26,6 +26,21 @@
   const DIG = { '٠': 0, '١': 1, '٢': 2, '٣': 3, '٤': 4, '٥': 5, '٦': 6, '٧': 7, '٨': 8, '٩': 9, '۰': 0, '۱': 1, '۲': 2, '۳': 3, '۴': 4, '۵': 5, '۶': 6, '۷': 7, '۸': 8, '۹': 9 };
   const latin = s => String(s ?? '').replace(/[٠-٩۰-۹]/g, d => DIG[d]);
   const nz = s => String(s ?? '').replace(/[ً-ٟـ‏‎]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim();
+  /* اليوم من التاريخ الهجري (أم القرى) */
+  const DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  let umf = null;
+  function weekdayOf(y, m, d) {
+    y = +y; m = +m; d = +d; if (!y || !m || !d) return '';
+    try {
+      umf ||= new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', { year: 'numeric', month: 'numeric', day: 'numeric', timeZone: 'UTC' });
+      const t0 = Date.UTC(2026, 9, 26, 12) + ((y - 1448) * 354.367 + (m - 4) * 29.53 + (d - 15)) * 86400000;
+      for (let k = 0; k <= 60; k++) for (const sg of k ? [1, -1] : [1]) {
+        const dt = new Date(t0 + sg * k * 86400000), p = Object.fromEntries(umf.formatToParts(dt).map(x => [x.type, x.value]));
+        if (+p.year === y && +p.month === m && +p.day === d) return DAYS[dt.getUTCDay()];
+      }
+    } catch { }
+    return '';
+  }
   const STOP = new Set(['رضي', 'الله', 'عنه', 'عنها', 'بن', 'ابن', 'ال']);
   const toks = s => nz(s).split(' ').filter(t => t && !STOP.has(t));
 
@@ -185,10 +200,9 @@
 
   /* ---------- النموذج ---------- */
   const F = {
-    num: $('#fNum'), time: $('#fTime'), day: $('#fDay'), y: $('#fY'), m: $('#fM'), d: $('#fD'),
+    num: $('#fNum'), time: $('#fTime'), day: $('#fDay'), date: $('#fDate'),
     mosque: $('#fMosque'), speaker: $('#fSpeaker'), title: $('#fTitle'), fasah: $('#fFasah'),
   };
-  F.m.innerHTML = '<option value="">—</option>' + Render.MONTHS.slice(1).map((n, i) => `<option value="${i + 1}">${i + 1} · ${n}</option>`).join('');
   function buildMosqueSelect() {
     const jam = S.qr.filter(q => q.name.startsWith('جامع')), mas = S.qr.filter(q => !q.name.startsWith('جامع'));
     const opt = q => `<option value="${esc(q.name)}">${esc(q.name)}</option>`;
@@ -203,7 +217,7 @@
     if (!a) { Object.values(F).forEach(el => el.value = ''); $('#mosqueHint').textContent = ''; return; }
     F.num.value = a.num; F.time.value = a.time; F.day.value = a.day;
     if (a.day && ![...F.day.options].some(o => o.value === a.day)) F.day.add(new Option(a.day, a.day));
-    F.day.value = a.day; F.y.value = a.y; F.m.value = a.m; F.d.value = a.d;
+    F.day.value = a.day; F.date.value = a.d && a.m ? `${a.d}/${a.m}` + (+a.y !== +S.settings.year ? '/' + a.y : '') : '';
     const q = qrFor(a); F.mosque.value = a.remote ? '__remote' : (q ? q.name : '');
     F.speaker.value = a.speaker; F.title.value = a.title; F.fasah.value = a.fasah; $('#tsVal').textContent = Math.round((+a.ts || 1) * 100) + '%';
     const h = $('#mosqueHint');
@@ -219,9 +233,15 @@
   bind(F.num, (a, v) => { a.num = latin(v).trim(); a.numAuto = false; });
   bind(F.time, (a, v) => a.time = v);
   bind(F.day, (a, v) => a.day = v);
-  bind(F.y, (a, v) => a.y = latin(v).trim());
-  bind(F.m, (a, v) => a.m = v);
-  bind(F.d, (a, v) => a.d = latin(v).trim());
+  F.date.addEventListener('input', () => {
+    const a = cur(); if (!a) return;
+    const p = parseDate(F.date.value, S.settings.year);
+    if (p.d && p.m) {
+      a.y = p.y; a.m = p.m; a.d = p.d;
+      const w = weekdayOf(a.y, a.m, a.d); if (w) { a.day = w; F.day.value = w; }
+      persist(); queueDraw(); patchItem(a);
+    }
+  });
   bind(F.speaker, (a, v) => a.speaker = v);
   bind(F.title, (a, v) => a.title = v);
   bind(F.fasah, (a, v) => a.fasah = latin(v));
@@ -301,7 +321,7 @@
   }
   let cancelExport = false;
   async function exportMany() {
-    let list = S.exp.scope === 'all' ? S.ads.filter(isComplete) : S.exp.scope === 'one' ? [cur()].filter(Boolean) : S.ads.filter(a => a.on);
+    let list = pickList();
     const skipped = list.filter(a => !isComplete(a)).length;
     list = list.filter(isComplete);
     if (!list.length) return toast('لا توجد إعلانات مكتملة للتصدير');
@@ -330,10 +350,25 @@
     } catch (e) { if (e.message !== 'cancel') { console.error(e); toast('تعذّر التصدير: ' + e.message); } else toast('أُوقف التصدير'); }
     finally { prog.hidden = true; go.textContent = 'ابدأ التصدير'; go.onclick = exportMany; bar.style.width = '0'; }
   }
+  const dkey = (y, m, d) => (+y || 0) * 10000 + (+m || 0) * 100 + (+d || 0);
+  const isLesson = a => /\(\s*درس/.test(a.title) || /^لا يحتاج/.test(String(a.fasah));
+  function pickList() { const l = pickList0(); return $('#xSkip').checked ? l.filter(a => !isLesson(a) && !a.remote) : l; }
+  function pickList0() {
+    const sc = S.exp.scope;
+    if (sc === 'all') return S.ads.filter(isComplete);
+    if (sc === 'one') return [cur()].filter(Boolean);
+    if (sc === 'range') {
+      const f = parseDate($('#xFrom').value, S.settings.year), t = parseDate($('#xTo').value, S.settings.year);
+      const lo = f.d ? dkey(f.y, f.m, f.d) : 0, hi = t.d ? dkey(t.y, t.m, t.d) : 99999999;
+      return S.ads.filter(a => isComplete(a) && dkey(a.y, a.m, a.d) >= lo && dkey(a.y, a.m, a.d) <= hi);
+    }
+    return S.ads.filter(a => a.on);
+  }
   function updateExportInfo() {
-    const n = S.exp.scope === 'all' ? S.ads.filter(isComplete).length : S.exp.scope === 'one' ? 1 : S.ads.filter(a => a.on && isComplete(a)).length;
+    $('#xRange').hidden = S.exp.scope !== 'range';
+    const n = pickList().filter(isComplete).length;
     const W = +S.exp.size, H = Math.round(W * 4525 / 3394);
-    const noqr = (S.exp.scope === 'one' ? [cur()].filter(Boolean) : S.ads.filter(a => (S.exp.scope === 'all' || a.on) && isComplete(a))).filter(a => status(a) === 'noqr').length;
+    const noqr = pickList().filter(a => isComplete(a) && status(a) === 'noqr').length;
     $('#xInfo').textContent = `${n} إعلان · ${W}×${H} بكسل` + (noqr ? ` · تنبيه: ${noqr} بدون باركود` : '');
     $('#xZip').disabled = S.exp.fmt === 'pdf';
   }
@@ -349,6 +384,8 @@
     $('#xZip').checked = S.exp.zip;
   }
   seg('#xScope', 'scope'); seg('#xFmt', 'fmt'); seg('#xSize', 'size', Number);
+  $('#xSkip').addEventListener('change', () => updateExportInfo());
+  ['#xFrom', '#xTo'].forEach(id => $(id).addEventListener('input', () => updateExportInfo()));
   $('#xZip').addEventListener('change', e => { S.exp.zip = e.target.checked; persist(); });
 
   /* ---------- أحداث الواجهة ---------- */
@@ -411,7 +448,7 @@
     try {
       const name = 'مخصص ' + f.name.replace(/\.[^.]+$/, '');
       const face = new FontFace(name, await f.arrayBuffer(), { weight: '100 900' }); await face.load(); document.fonts.add(face);
-      Render.FONTS.push({ name, w: 700, label: name }); S.settings.font = name; fillFontSelects(); queueDraw(); toast('تم تحميل الخط');
+      Render.FONTS.push({ name, w: 700, label: name }); S.settings.font = name; fontDb.put({ name, data: await f.arrayBuffer() }); persist(); fillFontSelects(); queueDraw(); toast('تم تحميل الخط وحفظه في هذا المتصفح');
     } catch { toast('تعذّر قراءة الخط'); } e.target.value = '';
   });
   $('#btnTpl').addEventListener('click', () => $('#tplFile').click());
@@ -439,9 +476,43 @@
   /* التصدير */
   $('#btnExport').addEventListener('click', () => {
     if (!S.ads.length) return toast('استورد ملفاً أولاً');
-    syncSeg(); updateExportInfo(); $('#btnGo').onclick = exportMany; $('#dlgExport').showModal();
+    const ks = S.ads.map(a => dkey(a.y, a.m, a.d)).filter(Boolean).sort((x, y) => x - y);
+    if (ks.length && !$('#xFrom').value) {
+      const fmt = k => `${k % 100}/${Math.floor(k / 100) % 100}`; $('#xFrom').value = fmt(ks[0]); $('#xTo').value = fmt(ks[ks.length - 1]);
+    }
+    $('#photoStep').hidden = true; syncSeg(); updateExportInfo(); $('#btnGo').onclick = exportMany; $('#dlgExport').showModal();
   });
   $('#btnGo').onclick = exportMany;
+
+
+  /* حفظ في الصور: مشاركة الصور كملفات صور عبر نافذة المشاركة (خيار «حفظ الصور» في الآيفون) */
+  const canShareFiles = () => { try { return !!(navigator.canShare && navigator.canShare({ files: [new File([''], 'a.jpg', { type: 'image/jpeg' })] })); } catch { return false; } };
+  if (canShareFiles()) $('#btnPhotos').hidden = false;
+  async function exportPhotos() {
+    const list = pickList().filter(isComplete);
+    if (!list.length) return toast('لا توجد إعلانات في هذا النطاق');
+    const fmt = S.exp.fmt === 'png' ? 'png' : 'jpg', W = Math.min(+S.exp.size, 2400);
+    const prog = $('#prog'), bar = $('#progBar'), txt = $('#progTxt'), step = $('#photoStep');
+    prog.hidden = false; step.hidden = true; const files = [];
+    try {
+      for (let i = 0; i < list.length; i++) {
+        txt.textContent = `تجهيز ${i + 1} / ${list.length}`; bar.style.width = (i / list.length * 100) + '%';
+        await new Promise(r => setTimeout(r, 0));
+        const { blob } = await renderBlob(list[i], W, fmt);
+        files.push(new File([blob], fname(list[i], fmt), { type: blob.type }));
+      }
+    } catch (e) { toast('تعذّر التجهيز: ' + e.message); prog.hidden = true; return; }
+    prog.hidden = true; bar.style.width = '0';
+    const CH = 20, chunks = []; for (let i = 0; i < files.length; i += CH) chunks.push(files.slice(i, i + CH));
+    let k = 0;
+    const label = () => { step.textContent = chunks.length > 1 ? `حفظ الدفعة ${k + 1} من ${chunks.length} (${chunks[k].length} صورة)` : `اضغط لحفظ ${files.length} صورة في الصور`; };
+    label(); step.hidden = false;
+    step.onclick = async () => {
+      try { await navigator.share({ files: chunks[k] }); k++; if (k >= chunks.length) { step.hidden = true; toast('تمت المشاركة — اختر «حفظ الصور» لتنتقل إلى الألبوم'); } else label(); }
+      catch (e) { if (e.name !== 'AbortError') toast('تعذّرت المشاركة، جرّب حجماً أصغر أو دفعة أقل'); }
+    };
+  }
+  $('#btnPhotos').addEventListener('click', exportPhotos);
 
   /* تعديل جماعي */
   $('#btnBulk').addEventListener('click', () => { $('#bulkN').textContent = S.ads.filter(a => a.on).length; $('#dlgBulk').showModal(); });
@@ -514,9 +585,21 @@
   let tt; function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 3800); }
   window.__app = { S, importFile, drawPreview, status, qrFor, select, exportMany };
 
+  /* ---------- حفظ الخطوط المرفوعة داخل المتصفح (IndexedDB) ---------- */
+  const fontDb = {
+    open() { return new Promise((res, rej) => { try { const r = indexedDB.open('ads-fonts', 1); r.onupgradeneeded = () => r.result.createObjectStore('f', { keyPath: 'name' }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); } catch (e) { rej(e); } }); },
+    async put(o) { try { const db = await this.open(); db.transaction('f', 'readwrite').objectStore('f').put(o); } catch { } },
+    async all() { try { const db = await this.open(); return await new Promise(res => { const q = db.transaction('f').objectStore('f').getAll(); q.onsuccess = () => res(q.result); q.onerror = () => res([]); }); } catch { return []; } },
+  };
+  async function restoreFonts() {
+    for (const o of await fontDb.all()) {
+      try { const face = new FontFace(o.name, o.data, { weight: '100 900' }); await face.load(); document.fonts.add(face); if (!Render.FONTS.some(f => f.name === o.name)) Render.FONTS.push({ name: o.name, w: 700, label: o.name }); } catch { }
+    }
+  }
+
   /* ---------- البدء ---------- */
   (async () => {
-    buildMosqueSelect();
+    buildMosqueSelect(); await restoreFonts();
     const sv = store.get('settings-v1'); if (sv) { S.settings = { ...S.settings, ...sv.settings }; S.exp = { ...S.exp, ...sv.exp }; }
     if (!Render.FONTS.some(f => f.name === S.settings.font)) S.settings.font = 'Cairo';
     const saved = store.get('ads-v1');

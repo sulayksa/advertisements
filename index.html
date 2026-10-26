@@ -101,13 +101,9 @@
       <label class="f"><span>اليوم</span>
         <select id="fDay"><option value="">—</option><option>السبت</option><option>الأحد</option><option>الاثنين</option><option>الثلاثاء</option><option>الأربعاء</option><option>الخميس</option><option>الجمعة</option></select>
       </label>
-      <div class="f"><span>التاريخ الهجري</span>
-        <div class="date3">
-          <input id="fY" inputmode="numeric" placeholder="السنة" aria-label="السنة">
-          <select id="fM" aria-label="الشهر"></select>
-          <input id="fD" inputmode="numeric" placeholder="اليوم" aria-label="يوم الشهر">
-        </div>
-      </div>
+      <label class="f"><span>التاريخ الهجري (اليوم يتحدد تلقائياً)</span>
+        <input id="fDate" inputmode="numeric" placeholder="مثال: 17/5" dir="ltr" style="text-align:right">
+      </label>
 
       <label class="f"><span>المسجد (يحدد الباركود)</span><select id="fMosque"></select></label>
       <div class="hint" id="mosqueHint"></div>
@@ -171,8 +167,13 @@
         <div class="seg" id="xScope">
           <button type="button" data-v="checked" class="on">المحدد</button>
           <button type="button" data-v="all">الكل</button>
+          <button type="button" data-v="range">نطاق تاريخ</button>
           <button type="button" data-v="one">الحالي</button>
         </div>
+      </div>
+      <div class="grid2" id="xRange" hidden>
+        <label class="f"><span>من تاريخ</span><input id="xFrom" inputmode="numeric" placeholder="17/5" dir="ltr" style="text-align:right"></label>
+        <label class="f"><span>إلى تاريخ</span><input id="xTo" inputmode="numeric" placeholder="30/5" dir="ltr" style="text-align:right"></label>
       </div>
       <div class="f"><span>الصيغة</span>
         <div class="seg" id="xFmt">
@@ -189,12 +190,15 @@
           <button type="button" data-v="1080">جوال ١٠٨٠</button>
         </div>
       </div>
+      <label class="check"><input type="checkbox" id="xSkip" checked><span>استثناء الدروس المستمرة والمحاضرات «عن بعد»</span></label>
       <label class="check"><input type="checkbox" id="xZip" checked><span>حزمة واحدة (ZIP) بدل ملفات منفصلة — لا ينطبق على PDF</span></label>
       <p class="note" id="xInfo"></p>
+      <button class="btn primary" id="photoStep" type="button" hidden></button>
       <div class="progress" id="prog" hidden><i id="progBar"></i><span id="progTxt"></span></div>
     </div>
     <footer>
       <button class="btn" value="close">إلغاء</button>
+      <button class="btn" id="btnPhotos" type="button" hidden>حفظ في الصور</button>
       <button class="btn primary" id="btnGo" type="button">ابدأ التصدير</button>
     </footer>
   </form>
